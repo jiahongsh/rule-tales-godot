@@ -57,48 +57,69 @@ AI 网关只处理 OpenAI 兼容的 HTTP 请求和响应解析，不拥有游戏
 
 ```mermaid
 flowchart TB
-    UI[Godot UI\n大厅 / 工作台 / 工坊 / 存档] --> Session[GameSession\n回合编排与生命周期]
+    UI["UI 层<br/>大厅 · 工作台 · 工坊 · 存档"] -->|用户意图| GS["GameSession<br/>回合编排与权威提交"]
 
-    subgraph Memory[长期记忆与上下文层]
-        Facts[StructuredFactStore\n结构化事实]
-        History[History\n情景对话历史]
-        Search[MemorySearch\n最近 + 相关检索]
-        Rules[RuleFragmentIndex\n规则切片与规则检索]
-        Timeline[Timeline\n关键节点快照]
-        Meta[MetaProfileService\n跨局元记忆]
+    subgraph READ["读取路径：上下文构建"]
+        DOC["RuleDocumentData<br/>规则原文"] --> IDX["RuleFragmentIndex<br/>切片 · 稳定 ID · trace"]
+        HIST["history[]<br/>情景历史"] --> SEARCH["MemorySearch<br/>最近窗口 + 相关召回"]
+        FACTS["facts.records<br/>结构化事实"] --> SNAP["prompt_snapshot()<br/>优先级 + 字符预算"]
+        STATE["state.data<br/>当前权威状态"] --> ASSEMBLER["TurnPromptAssembler<br/>分层消息组装"]
+        IDX --> ASSEMBLER
+        SEARCH --> ASSEMBLER
+        SNAP --> ASSEMBLER
     end
 
-    subgraph Authority[客户端权威层]
-        State[RuleTalesGameState\n当前状态与 patch schema]
-        Guard[ClientRuleGuard\n规则冲突与证据裁判]
-        Save[RuleTalesSaveService\n原子存档与轮换]
+    GS -->|phase + action| ASSEMBLER
+    ASSEMBLER -->|messages + selection trace| MODEL["模型边界<br/>只返回 Turn Envelope"]
+
+    subgraph PROVIDERS["可替换生成器"]
+        API["AiGateway<br/>OpenAI-compatible HTTP"]
+        OFFLINE["Offline Flow<br/>本地确定性叙事"]
+        FORGE["RuleForge<br/>规则种子生成"]
+    end
+    MODEL --> API
+    MODEL --> OFFLINE
+    FORGE -.->|生成规则档案后进入会话| GS
+    API -->|narration + patch + memory_ops| GS
+    OFFLINE -->|同一回合协议| GS
+
+    subgraph WRITE["写入路径：候选校验与提交"]
+        PRE["ClientRuleGuard.validate<br/>字段 · 引用 · 证据"]
+        CSTATE["候选状态副本<br/>RuleTalesGameState"]
+        PATCH["apply_patch()"]
+        RULECHECK["validate_candidate()<br/>明确规则冲突"]
+        CFACTS["候选事实副本<br/>StructuredFactStore.clone()"]
+        OPS["apply_operations()<br/>upsert / resolve"]
+        COMMIT["一次性提交<br/>state + facts + history"]
+        PRE --> CSTATE --> PATCH --> RULECHECK --> CFACTS --> OPS --> COMMIT
     end
 
-    subgraph Model[可替换模型层]
-        Prompt[TurnPromptAssembler\n上下文组装]
-        Gateway[AiGateway\nOpenAI-compatible HTTP]
-        Generator[Offline Flow / Rule Forge\n离线或确定性生成]
-    end
+    GS --> PRE
+    COMMIT -->|关键节点| TIMELINE["timeline<br/>最多 24 个快照"]
+    COMMIT -->|每回合| SAVE["RuleTalesSaveService<br/>原子 JSON + 自动轮换"]
+    COMMIT -->|终局且为限时局| META["MetaProfileService<br/>跨局认知点 / 图鉴 / 天赋"]
 
-    Session --> Prompt
-    Facts --> Prompt
-    History --> Search --> Prompt
-    Rules --> Prompt
-    State --> Prompt
-    Prompt --> Gateway
-    Prompt --> Generator
-    Gateway --> Session
-    Generator --> Session
-    Session --> Guard
-    Guard --> State
-    Guard --> Facts
-    State --> Timeline
-    Facts --> Timeline
-    State --> Save
-    Facts --> Save
-    Timeline --> Save
-    Session --> Meta
+    PRE -.->|拒绝：状态不变| REJECT["Reject<br/>恢复 busy / 选项 / 诊断"]
+    RULECHECK -.->|冲突：不提交| REJECT
+    OPS -.->|记忆批次失败：不提交| REJECT
+
+    classDef ui fill:#e8eef7,stroke:#42658a,color:#172538,stroke-width:1.5px;
+    classDef core fill:#eee9f7,stroke:#76529a,color:#241b31,stroke-width:1.5px;
+    classDef read fill:#e9f4ef,stroke:#3f8065,color:#172b22,stroke-width:1.5px;
+    classDef model fill:#fff2d9,stroke:#b27827,color:#38250c,stroke-width:1.5px;
+    classDef write fill:#f7e8e8,stroke:#a24d51,color:#351719,stroke-width:1.5px;
+    classDef persist fill:#e8f0f2,stroke:#4c7880,color:#172a2e,stroke-width:1.5px;
+    classDef reject fill:#fbe3e3,stroke:#b23b43,color:#4a1117,stroke-width:2px;
+    class UI ui;
+    class GS,ASSEMBLER,COMMIT core;
+    class DOC,IDX,HIST,SEARCH,FACTS,SNAP,STATE,TIMELINE read;
+    class MODEL,API,OFFLINE,FORGE model;
+    class PRE,CSTATE,PATCH,RULECHECK,CFACTS,OPS write;
+    class SAVE,META persist;
+    class REJECT reject;
 ```
+
+这张图刻意把**读取路径**和**写入路径**分开：读取路径只构建本轮上下文；写入路径必须经过候选副本和客户端裁判，最终才会更新权威对象。`RuleForge` 是开局生成器，不是每回合的模型提供方；`timeline` 和 `MetaProfileService` 也不是提示词读取源，而是提交成功后的持久化结果。
 
 核心依赖方向是：
 
@@ -115,33 +136,43 @@ UI 只提交用户意图和展示信号，不直接修改权威状态。临时�
 一次行动从输入到提交的完整路径如下：
 
 ```mermaid
-sequenceDiagram
-    participant User as 玩家
-    participant Session as GameSession
-    participant Assembler as TurnPromptAssembler
-    participant Memory as Facts + History + RuleIndex
-    participant AI as AiGateway / 离线生成器
-    participant Guard as ClientRuleGuard
-    participant Candidate as 候选 State + 候选 Facts
-    participant Save as SaveService
+flowchart LR
+    IN["输入<br/>玩家行动 + 当前会话"] --> Q["查询构建<br/>action · location · weather<br/>active facts · current state"]
+    Q --> R1["规则召回<br/>global + relevant<br/>character budget"]
+    Q --> R2["历史召回<br/>recent window + relevant history"]
+    Q --> R3["事实快照<br/>open_event 优先<br/>active 优先 · last_updated_turn"]
+    R1 --> M["TurnPromptAssembler<br/>system constraints + state + memory"]
+    R2 --> M
+    R3 --> M
+    M --> OUT["Turn Envelope<br/>narration · choices · rule_refs<br/>memory_ops · patch"]
 
-    User->>Session: submit_action(action)
-    Session->>Memory: 根据行动、地点、天气、状态生成 query
-    Session->>Assembler: build(phase, action, ...)
-    Assembler->>Memory: 选择规则、最近历史、相关历史、事实快照
-    Memory-->>Assembler: messages + selection trace
-    Assembler-->>AI: 结构化提示词
-    AI-->>Session: narration + choices + rule_refs + memory_ops + patch
-    Session->>Guard: 校验规则引用、证据和调用边界
-    Guard-->>Session: 接受 / 拒绝
-    Session->>Candidate: 深拷贝当前状态和事实
-    Candidate->>Candidate: apply_patch + apply_operations
-    Candidate->>Guard: 校验候选状态是否违反明确规则
-    Guard-->>Session: 接受 / 拒绝
-    Session->>Session: 一次性替换 state、facts、history
-    Session->>Save: 写入自动存档与时间线
-    Save-->>Session: 成功 / 可恢复失败
+    OUT --> V1{ "结构校验<br/>JSON · 字段 · 类型" }
+    V1 -- 失败 --> REJ["拒绝<br/>权威状态不变"]
+    V1 -- 通过 --> V2{ "引用与证据<br/>rule_refs · action/narration" }
+    V2 -- 失败 --> REJ
+    V2 -- 通过 --> S["候选副本<br/>state.clone + facts.clone"]
+    S --> P["应用候选变化<br/>apply_patch + apply_operations"]
+    P --> V3{ "规则冲突校验<br/>数值边界 · 禁带物品<br/>地图/结局约束" }
+    V3 -- 冲突 --> REJ
+    V3 -- 通过 --> C["原子提交<br/>state + facts + history"]
+    C --> T["时间线快照<br/>关键节点"]
+    C --> A["自动存档<br/>临时文件校验后替换"]
+
+    classDef input fill:#e8eef7,stroke:#42658a,color:#172538,stroke-width:1.5px;
+    classDef retrieval fill:#e9f4ef,stroke:#3f8065,color:#172b22,stroke-width:1.5px;
+    classDef context fill:#eee9f7,stroke:#76529a,color:#241b31,stroke-width:1.5px;
+    classDef validation fill:#fff2d9,stroke:#b27827,color:#38250c,stroke-width:1.5px;
+    classDef commit fill:#e8f0f2,stroke:#4c7880,color:#172a2e,stroke-width:1.5px;
+    classDef reject fill:#fbe3e3,stroke:#b23b43,color:#4a1117,stroke-width:2px;
+    class IN,Q input;
+    class R1,R2,R3 retrieval;
+    class M,OUT context;
+    class V1,V2,V3,S,P validation;
+    class C,T,A commit;
+    class REJ reject;
 ```
+
+图中的分叉只发生在**读取阶段**：规则、历史和事实分别召回，再汇合成一份带 trace 的提示词。模型输出后不允许直接写入任何持久对象，必须经过三道门：结构校验、引用/证据校验、候选状态的规则冲突校验。只有最后的原子提交成功，才会写入时间线和自动存档。
 
 ### 回合提交的关键不变量
 
@@ -159,14 +190,14 @@ sequenceDiagram
 
 ### 记忆分层
 
-| 层 | 载体 | 作用 | 是否权威 |
-|---|---|---|---|
-| 当前状态 | `RuleTalesGameState` | 时间、数值、背包、地图、结局 | 是 |
-| 结构化事实 | `StructuredFactStore` | 线索、人物、地点、规则、开放事件 | 是 |
-| 情景历史 | `GameSession.history` | 原始用户行动和模型叙事 | 否，历史可能过时 |
-| 规则记忆 | `RuleFragmentIndex` | 可引用的规则片段和稳定 ID | 是，来源只读 |
-| 时间线 | `GameSession.timeline` | 关键节点和可恢复快照 | 是，受会话规则约束 |
-| 跨局记忆 | `MetaProfileService` | 认知点、图鉴、异常和天赋 | 是，跨局持久化 |
+| 层         | 载体                     | 作用                             | 是否权威           |
+| ---------- | ------------------------ | -------------------------------- | ------------------ |
+| 当前状态   | `RuleTalesGameState`   | 时间、数值、背包、地图、结局     | 是                 |
+| 结构化事实 | `StructuredFactStore`  | 线索、人物、地点、规则、开放事件 | 是                 |
+| 情景历史   | `GameSession.history`  | 原始用户行动和模型叙事           | 否，历史可能过时   |
+| 规则记忆   | `RuleFragmentIndex`    | 可引用的规则片段和稳定 ID        | 是，来源只读       |
+| 时间线     | `GameSession.timeline` | 关键节点和可恢复快照             | 是，受会话规则约束 |
+| 跨局记忆   | `MetaProfileService`   | 认知点、图鉴、异常和天赋         | 是，跨局持久化     |
 
 ### 结构化事实
 
@@ -262,17 +293,34 @@ selected_ids
 
 ```mermaid
 flowchart LR
-    A[AI 输出候选 patch] --> B{字段与类型校验}
-    B -- 失败 --> X[拒绝，状态不变]
-    B -- 通过 --> C[候选状态副本]
-    C --> D{行动/叙事证据校验}
-    D -- 失败 --> X
-    D -- 通过 --> E{完整规则冲突校验}
-    E -- 冲突 --> X
-    E -- 通过 --> F[提交候选状态]
-    F --> G[提交事实记忆]
-    G --> H[追加历史与时间线]
-    H --> I[自动存档]
+    P["模型输出<br/>Turn Envelope"] --> S["结构校验<br/>JSON + schema"]
+    S --> R["引用校验<br/>rule_refs ⊆ selected_ids"]
+    R --> E["证据校验<br/>action/narration 支持 patch"]
+    E --> CS["候选状态<br/>RuleTalesGameState 副本"]
+    CS --> AP["apply_patch()<br/>类型、范围、结构"]
+    AP --> RC["规则冲突校验<br/>明确数值边界<br/>禁带物品"]
+    RC --> CF["候选事实<br/>StructuredFactStore 副本"]
+    CF --> MO["apply_operations()<br/>upsert / resolve"]
+    MO --> COMMIT["原子提交<br/>替换 state 与 facts<br/>追加 history"]
+    COMMIT --> SIDE["副作用<br/>timeline · autosave<br/>ending · meta"]
+
+    S -.失败.-> X["Reject<br/>恢复 UI / 诊断<br/>不改变已提交状态"]
+    R -.失败.-> X
+    E -.失败.-> X
+    AP -.失败.-> X
+    RC -.冲突.-> X
+    MO -.失败.-> X
+
+    classDef model fill:#fff2d9,stroke:#b27827,color:#38250c,stroke-width:1.5px;
+    classDef validation fill:#eee9f7,stroke:#76529a,color:#241b31,stroke-width:1.5px;
+    classDef candidate fill:#e9f4ef,stroke:#3f8065,color:#172b22,stroke-width:1.5px;
+    classDef commit fill:#e8f0f2,stroke:#4c7880,color:#172a2e,stroke-width:1.5px;
+    classDef reject fill:#fbe3e3,stroke:#b23b43,color:#4a1117,stroke-width:2px;
+    class P model;
+    class S,R,E,AP,RC,MO validation;
+    class CS,CF candidate;
+    class COMMIT,SIDE commit;
+    class X reject;
 ```
 
 `RuleTalesGameState` 只接受公开 patch：
@@ -313,22 +361,22 @@ flowchart LR
 
 ## 主要模块
 
-| 模块 | 文件 | 职责 |
-|---|---|---|
-| 会话编排 | `scripts/core/game_session.gd` | 回合生命周期、请求序列、提交、失败恢复、时间线和限时局事件 |
-| 权威状态 | `scripts/core/game_state.gd` | 状态 schema、patch 应用、边界校验、地图和终局 |
-| 结构化记忆 | `scripts/core/fact_store.gd` | 事实 schema、生命周期、记忆操作和优先级快照 |
-| 历史检索 | `scripts/core/memory_search.gd` | 最近窗口、相关历史、中文 token/bigram 评分 |
-| 规则检索 | `scripts/core/rule_index.gd` | 规则切片、稳定 ID、全局/相关召回和字符预算 |
-| 上下文组装 | `scripts/ai/prompt_assembler.gd` | 将规则、事实、历史和状态组装为模型消息 |
-| AI 网关 | `scripts/net/ai_gateway.gd` | HTTPS/localhost 边界、请求、响应解析、取消和大小限制 |
-| 状态裁判 | `scripts/engine/rule_guard.gd` | 规则引用、叙事证据、硬约束和候选状态冲突检查 |
-| 规则文档 | `scripts/core/rule_document.gd` | UTF-8 文档读取、章节解析和 512 KiB 限制 |
-| 回合存档 | `scripts/persistence/save_service.gd` | JSON 校验、临时文件、备份、原子替换和自动轮换 |
-| 跨局记忆 | `scripts/persistence/meta_profile.gd` | 认知点、图鉴、异常记录和天赋解锁 |
-| 种子生成 | `scripts/generator/rule_forge.gd` | 确定性规则生成、规则密度和可解性检查 |
-| 限时局系统 | `scripts/engine/run_systems.gd` | 路线、夜间异常、期限和结算奖励 |
-| UI 协调 | `scripts/main.gd`、`scripts/ui/` | 页面、窗口、用户输入、展示和设置，不直接拥有核心状态 |
+| 模块       | 文件                                    | 职责                                                       |
+| ---------- | --------------------------------------- | ---------------------------------------------------------- |
+| 会话编排   | `scripts/core/game_session.gd`        | 回合生命周期、请求序列、提交、失败恢复、时间线和限时局事件 |
+| 权威状态   | `scripts/core/game_state.gd`          | 状态 schema、patch 应用、边界校验、地图和终局              |
+| 结构化记忆 | `scripts/core/fact_store.gd`          | 事实 schema、生命周期、记忆操作和优先级快照                |
+| 历史检索   | `scripts/core/memory_search.gd`       | 最近窗口、相关历史、中文 token/bigram 评分                 |
+| 规则检索   | `scripts/core/rule_index.gd`          | 规则切片、稳定 ID、全局/相关召回和字符预算                 |
+| 上下文组装 | `scripts/ai/prompt_assembler.gd`      | 将规则、事实、历史和状态组装为模型消息                     |
+| AI 网关    | `scripts/net/ai_gateway.gd`           | HTTPS/localhost 边界、请求、响应解析、取消和大小限制       |
+| 状态裁判   | `scripts/engine/rule_guard.gd`        | 规则引用、叙事证据、硬约束和候选状态冲突检查               |
+| 规则文档   | `scripts/core/rule_document.gd`       | UTF-8 文档读取、章节解析和 512 KiB 限制                    |
+| 回合存档   | `scripts/persistence/save_service.gd` | JSON 校验、临时文件、备份、原子替换和自动轮换              |
+| 跨局记忆   | `scripts/persistence/meta_profile.gd` | 认知点、图鉴、异常记录和天赋解锁                           |
+| 种子生成   | `scripts/generator/rule_forge.gd`     | 确定性规则生成、规则密度和可解性检查                       |
+| 限时局系统 | `scripts/engine/run_systems.gd`       | 路线、夜间异常、期限和结算奖励                             |
+| UI 协调    | `scripts/main.gd`、`scripts/ui/`    | 页面、窗口、用户输入、展示和设置，不直接拥有核心状态       |
 
 ## 可复用方式
 
@@ -345,16 +393,16 @@ flowchart LR
 
 ### 替换或适配的部分
 
-| 游戏实现 | 通用应用中的适配方向 |
-|---|---|
+| 游戏实现               | 通用应用中的适配方向                       |
+| ---------------------- | ------------------------------------------ |
 | `RuleTalesGameState` | 用户档案、任务状态、订单状态、研究实验状态 |
-| `RuleDocumentData` | 知识库文档、产品手册、工作流规则 |
-| `triggered_rule` | 已确认约束、政策条款、系统决策依据 |
-| `open_event` | 待办事项、未解决问题、风险、承诺 |
-| `memory_ops` | 领域事件或工具调用结果 |
-| `ClientRuleGuard` | 业务规则、权限、数据质量和安全策略 |
-| `MetaProfileService` | 用户画像、跨项目偏好或长期能力档案 |
-| `Timeline` | 审计日志、版本快照、可恢复任务分支 |
+| `RuleDocumentData`   | 知识库文档、产品手册、工作流规则           |
+| `triggered_rule`     | 已确认约束、政策条款、系统决策依据         |
+| `open_event`         | 待办事项、未解决问题、风险、承诺           |
+| `memory_ops`         | 领域事件或工具调用结果                     |
+| `ClientRuleGuard`    | 业务规则、权限、数据质量和安全策略         |
+| `MetaProfileService` | 用户画像、跨项目偏好或长期能力档案         |
+| `Timeline`           | 审计日志、版本快照、可恢复任务分支         |
 
 推荐的复用边界是：
 
