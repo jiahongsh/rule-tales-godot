@@ -1,0 +1,49 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="异闻夜谈"
+run/main_scene="res://scenes/main.tscn"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="RuleTales/RuleTalesGodot"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://assets/app_icon.svg"
+
+[autoload]
+
+AppSettings="*res://scripts/core/app_settings.gd"
+GameSession="*res://scripts/core/game_session.gd"
+MCPRuntimeProbe="*uid://bsg12huaf1u5i"
+
+[display]
+
+window/size/viewport_width=1440
+window/size/viewport_height=810
+window/size/resizable=false
+window/size/window_width_override=1440
+window/size/window_height_override=810
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/size/min_width=960
+window/size/min_height=600
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg")
+
+[gui]
+
+theme/default_font_multichannel_signed_distance_field=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

@@ -1,0 +1,13 @@
+# Godot generated data and editor caches
+.godot/
+.gdmcp/
+*.import
+
+# Local Claude/editor configuration
+.claude/
+
+# OS and temporary files
+*.log
+*.tmp
+Thumbs.db
+.DS_Store

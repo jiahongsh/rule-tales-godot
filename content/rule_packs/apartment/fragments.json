@@ -1,0 +1,234 @@
+{
+  "theme": "apartment",
+  "displayName": "雾栖公寓",
+  "chapters": ["入住须知", "住户守则", "公共区域", "夜间补充", "物业通知", "离开方式"],
+  "locations": ["一层大厅", "楼梯间", "电梯间", "天台", "地下室", "走廊尽头", "物业办公室", "前台", "红色回收箱旁", "404 门牌前", "垃圾房", "配电间"],
+  "anomalies": [
+	{
+	  "id": "apt.anomaly.elevator_reflection",
+	  "title": "不属于轿厢的倒影",
+	  "location": "电梯间",
+	  "normal": "电梯门合拢前，你看见不锈钢门上映着自己、顶灯和身后的空走廊。倒影与眼前的动作完全同步。",
+	  "anomalous": "电梯门合拢前，你看见不锈钢门上映着自己和身后的空走廊。倒影里的你没有抬手，却独自按亮了一个不存在的楼层。",
+	  "reveal": "异常来自倒影中多出的独立动作；正常倒影不会替人选择楼层。"
+	},
+	{
+	  "id": "apt.anomaly.exit_sign",
+	  "title": "改变方向的出口灯",
+	  "location": "楼梯间",
+	  "normal": "楼梯间的绿色出口灯指向向下的台阶，防火门上的楼层数字与你刚离开的楼层一致。",
+	  "anomalous": "楼梯间的绿色出口灯同时向上、向下亮着两个箭头。你移开视线再看，两个箭头都指向身后的墙。",
+	  "reveal": "出口标识出现互相冲突且无法通行的方向，属于可验证的空间异常。"
+	},
+	{
+	  "id": "apt.anomaly.black_cat",
+	  "title": "黑猫身后的第二道影子",
+	  "location": "一层大厅",
+	  "normal": "门卫养的黑猫卧在前台脚边。它被顶灯照出一道短影，听见脚步后睁眼看了你一下。",
+	  "anomalous": "门卫养的黑猫卧在前台脚边。它没有移动，地上两道方向相反的影子却先后站了起来。",
+	  "reveal": "同一固定光源下出现两道主动移动的影子，不符合大厅的照明条件。"
+	},
+	{
+	  "id": "apt.anomaly.mailbox",
+	  "title": "多出来的住户信箱",
+	  "location": "一层大厅",
+	  "normal": "墙上的住户信箱从 101 顺序排到 408，唯独 404 的位置被一块旧铁皮封死。",
+	  "anomalous": "墙上的住户信箱从 101 顺序排到 408。崭新的 404 信箱半开着，里面有一封写着你全名的入住通知。",
+	  "reveal": "档案明确记载楼内不存在 404；新出现的信箱与规则直接冲突。"
+	},
+	{
+	  "id": "apt.anomaly.cctv_clock",
+	  "title": "提前一分钟的监控",
+	  "location": "物业办公室",
+	  "normal": "监控墙右上角的时间与腕表一致。画面里的走廊空着，只有声控灯依次熄灭。",
+	  "anomalous": "监控墙右上角的时间比腕表快一分钟。屏幕中的你已经走进办公室，正站在现实中的你身后。",
+	  "reveal": "监控显示尚未发生的画面，并在同一空间制造了第二个观察者。"
+	},
+	{
+	  "id": "apt.anomaly.recycle_bin",
+	  "title": "回收箱里的呼吸",
+	  "location": "红色回收箱旁",
+	  "normal": "红色回收箱投口紧闭，分类标签写着“仅收纸类”。箱体安静，地面散着几张潮湿传单。",
+	  "anomalous": "红色回收箱投口紧闭，箱体却按呼吸的节奏起伏。每次凹下去，投口里都会传出你的名字。",
+	  "reveal": "金属箱体出现生物呼吸并主动呼名，已经超出普通设备故障。"
+	},
+	{
+	  "id": "apt.anomaly.window_lights",
+	  "title": "对面楼的熄灯顺序",
+	  "location": "走廊尽头",
+	  "normal": "对面楼的窗灯零散亮着，偶尔有住户关灯。各扇窗互不相干，没有形成规律。",
+	  "anomalous": "对面楼的窗灯从左到右逐格熄灭。最后一盏正对着你，灯灭前窗后的人影抬手指向这边。",
+	  "reveal": "整排窗灯同步形成指向观察者的顺序，触发了不得继续直视的征兆。"
+	},
+	{
+	  "id": "apt.anomaly.floor_number",
+	  "title": "楼层数字的缺口",
+	  "location": "电梯间",
+	  "normal": "电梯层显停在 3。按钮从 1 到 8 依次排列，其中不存在的楼层位置留着一块没有刻字的金属板。",
+	  "anomalous": "电梯层显停在 3。没有刻字的金属板缓慢鼓起，浮出一个楼层数字；数字表面像眼睛一样反射着你。",
+	  "reveal": "原本封死的不存在楼层自行显现，并对观察行为产生反应。"
+	}
+  ],
+  "fragments": [
+	{
+	  "id": "apt.chain.key",
+	  "chapter": "离开方式",
+	  "pattern": "连续三晚在 23:00 后将你的住户登记卡从门缝塞出门外。第四天早晨，卡会回到门口，旁边多一把黄铜钥匙。钥匙是真的，可以使用。",
+	  "truth": "true",
+	  "chainId": "escape_stairs",
+	  "chainOrder": 1,
+	  "grants": ["item:brass_key"],
+	  "requires": ["item:register_card"]
+	},
+	{
+	  "id": "apt.chain.map",
+	  "chapter": "离开方式",
+	  "pattern": "黄铜钥匙能打开一层红色回收箱的底层暗格。里面有一张手绘楼层图，背面写着楼梯间防火门的开启顺序。",
+	  "truth": "true",
+	  "chainId": "escape_stairs",
+	  "chainOrder": 2,
+	  "grants": ["item:floor_map", "access:stairwell"],
+	  "requires": ["item:brass_key"]
+	},
+	{
+	  "id": "apt.chain.exit",
+	  "chapter": "离开方式",
+	  "pattern": "按楼层图标注的路线走楼梯间下楼，不要乘电梯。在日出前走出大门，途中无论听到谁叫你的名字，都不要回头。",
+	  "truth": "true",
+	  "chainId": "escape_stairs",
+	  "chainOrder": 3,
+	  "grants": ["route:outside"],
+	  "requires": ["item:floor_map", "access:stairwell"]
+	},
+	{
+	  "id": "apt.register",
+	  "chapter": "入住须知",
+	  "pattern": "入住当天务必到一层前台登记，领取你的住户登记卡并随身携带。登记卡上的名字写错的，当天要求更换，不要使用过夜的错卡。",
+	  "truth": "true",
+	  "lockTruth": true,
+	  "grants": ["item:register_card"]
+	},
+	{
+	  "id": "apt.door.badge",
+	  "chapter": "夜间补充",
+	  "pattern": "夜间有人敲门自称物业时，要求对方从门缝下塞进蓝色工牌。没有工牌的，不要开门。",
+	  "tampered": "夜间有人敲门自称物业时，要求对方从门缝下塞进蓝色工牌。确认工牌后，立刻开门让他进来。",
+	  "contradicts": ["apt.door.uniform"],
+	  "tamperable": true
+	},
+	{
+	  "id": "apt.door.uniform",
+	  "chapter": "夜间补充",
+	  "pattern": "物业夜班人员统一穿蓝色制服。夜间看到蓝色制服的，可以直接开门，不必查验工牌。",
+	  "contradicts": ["apt.door.badge"]
+	},
+	{
+	  "id": "apt.mirror.fog",
+	  "chapter": "住户守则",
+	  "pattern": "浴室镜子起雾时不要擦，等雾自己散。散去之后，照镜子不要超过三秒。",
+	  "contradicts": ["apt.mirror.wipe"]
+	},
+	{
+	  "id": "apt.mirror.wipe",
+	  "chapter": "住户守则",
+	  "pattern": "浴室镜子起雾时，用干布逆时针擦三下即可正常使用。这是物业提供的标准处理方法。",
+	  "contradicts": ["apt.mirror.fog"]
+	},
+	{
+	  "id": "apt.stairwell.repair",
+	  "chapter": "物业通知",
+	  "pattern": "楼梯间自本月起封闭维修，任何情况下都不要进入。出入请一律使用电梯。",
+	  "bans": ["access:stairwell"]
+	},
+	{
+	  "id": "apt.floor.missing",
+	  "chapter": "公共区域",
+	  "pattern": "本楼没有{n}层。电梯面板上如果出现{n}层按钮，不要按，也不要盯着它看超过三秒。",
+	  "tampered": "本楼没有{n}层。电梯面板上如果出现{n}层按钮，不要按，盯着它看三秒以上，直到它自己消失。",
+	  "slots": {"n": ["4", "5", "13", "18"]},
+	  "tamperable": true
+	},
+	{
+	  "id": "apt.curfew",
+	  "chapter": "住户守则",
+	  "pattern": "{t}之后，无论谁敲门都不要开。外卖和快递不会送到这栋楼。",
+	  "tampered": "{t}之后，只有连续敲门三次的才可以开门。外卖和快递不会送到这栋楼。",
+	  "slots": {"t": ["22:00", "23:00", "午夜 0 点"]},
+	  "tamperable": true
+	},
+	{
+	  "id": "apt.cat",
+	  "chapter": "公共区域",
+	  "pattern": "楼里有一只黑猫，是门卫养的，可以摸。如果你看到白猫，那不是猫，不要跟它走。"
+	},
+	{
+	  "id": "apt.hallway.light",
+	  "chapter": "公共区域",
+	  "pattern": "走廊声控灯熄灭时，原地站定等它自己亮。不要用手机照明，不要跑动。"
+	},
+	{
+	  "id": "apt.recycle.bin",
+	  "chapter": "公共区域",
+	  "pattern": "一层的红色回收箱只收纸类废品。如果你看到它收了别的东西，当天不要再经过一层大厅。",
+	  "tampered": "一层的红色回收箱只收纸类废品。如果你看到它收了别的东西，请上前把东西取出来。",
+	  "tamperable": true
+	},
+	{
+	  "id": "apt.room404",
+	  "chapter": "入住须知",
+	  "pattern": "本楼每层八户，没有 404 室。如果某层出现 404 门牌，不要敲门，不要停留，当天不要走那条走廊。"
+	},
+	{
+	  "id": "apt.broadcast",
+	  "chapter": "物业通知",
+	  "pattern": "物业广播以两声电流杂音开始。以音乐声开始的广播不是物业发出的，无论它说什么，都不要照做。",
+	  "tampered": "物业广播以两声电流杂音开始。以音乐声开始的广播是紧急通知频道，请立刻照做。",
+	  "tamperable": true
+	},
+	{
+	  "id": "apt.window.opposite",
+	  "chapter": "夜间补充",
+	  "pattern": "夜间不要直视对面楼的窗户超过十秒。如果对面的灯在同一时刻整齐熄灭，立刻拉上窗帘。"
+	},
+	{
+	  "id": "apt.trash",
+	  "chapter": "住户守则",
+	  "pattern": "垃圾请在日出后拿下楼。夜间不要把垃圾袋放在门外，哪怕只是暂时放一放。"
+	},
+	{
+	  "id": "apt.neighbor",
+	  "chapter": "住户守则",
+	  "pattern": "你隔壁的房间空置很久了。听到墙后传来日常声响是正常的，不要贴墙听，更不要回应。"
+	},
+	{
+	  "id": "apt.phone",
+	  "chapter": "夜间补充",
+	  "pattern": "房间里的座机没有接线，它不会响。如果响了，不要接，把听筒扣好。"
+	},
+	{
+	  "id": "apt.children",
+	  "chapter": "公共区域",
+	  "pattern": "楼里不允许儿童在走廊玩耍。如果你在走廊看到玩耍的小孩，回到房间，锁好门。"
+	},
+	{
+	  "id": "apt.water.red",
+	  "chapter": "物业通知",
+	  "pattern": "如果水龙头流出的水发红，立即停用。天亮后向物业报修，报修时不要描述颜色。"
+	},
+	{
+	  "id": "apt.blackout",
+	  "chapter": "夜间补充",
+	  "pattern": "停电时不要出门查看电闸，电闸不在这一层。待在房间里，等电力恢复。"
+	},
+	{
+	  "id": "apt.guard",
+	  "chapter": "公共区域",
+	  "pattern": "夜班保安穿黑色制服，他不会主动开口。如果他先对你说话，不要回答，走向有灯的地方。"
+	},
+	{
+	  "id": "apt.rooftop",
+	  "chapter": "公共区域",
+	  "pattern": "天台不对外开放。如果你看到有人在天台晾晒衣物，不要上去，也不要数晾了几件。"
+	}
+  ]
+}
