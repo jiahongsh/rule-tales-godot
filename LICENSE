@@ -1,40 +1,131 @@
-# 异闻夜谈源码非商业许可
+# PolyForm Noncommercial License 1.0.0
 
-版权所有 © 项目维护者。
+<https://polyformproject.org/licenses/noncommercial/1.0.0>
 
-本许可仅适用于本项目作者创作并明确纳入“源码”范围的源代码文件。除非文件、目录或随附声明另有说明，第三方组件、引擎、插件、图像、音频、规则文本、字体、商标和其他非源码内容不受本许可授权约束。
+## Acceptance
 
-## 授权
+In order to get any license under these terms, you must agree
+to them as both strict obligations and conditions to all
+your licenses.
 
-在遵守本许可条款的前提下，任何人均可：
+## Copyright License
 
-- 查看、复制和保存本项目源码；
-- 修改、改编和制作基于本项目源码的衍生版本；
-- 在非商业目的下运行、研究、测试和使用本项目源码；
-- 在非商业目的下分享原始源码或修改后的源码。
+The licensor grants you a copyright license for the
+software to do everything you might do with the software
+that would otherwise infringe the licensor's copyright
+in it for any permitted purpose.  However, you may
+only distribute the software according to [Distribution
+License](#distribution-license) and make changes or new works
+based on the software according to [Changes and New Works
+License](#changes-and-new-works-license).
 
-你可以自由修改和使用源码，但必须在源码副本或衍生版本中保留本许可声明，并说明重要修改（如有）。
+## Distribution License
 
-## 商业使用限制
+The licensor grants you an additional copyright license
+to distribute copies of the software.  Your license
+to distribute covers distributing the software with
+changes and new works permitted by [Changes and New Works
+License](#changes-and-new-works-license).
 
-未经项目维护者另行书面许可，不得将本项目源码或基于本项目源码的衍生作品用于商业目的，包括但不限于：
+## Notices
 
-- 销售、出租、收费下载或付费分发；
-- 集成到收费软件、游戏、产品、服务或商业发行包；
-- 作为商业 SaaS、托管服务、咨询服务或外包交付的一部分；
-- 以广告、赞助、订阅、捐赠或其他营利方式直接或间接获利；
-- 为商业组织的内部生产、运营或商业交付提供核心功能。
+You must ensure that anyone who gets a copy of any part of
+the software from you also gets a copy of these terms or the
+URL for them above, as well as copies of any plain-text lines
+beginning with `Required Notice:` that the licensor provided
+with the software.  For example:
 
-如需商业化使用，请联系项目维护者协商商业授权。联系方式暂不在本许可文件中公布。
+> Required Notice: Copyright Yoyodyne, Inc. (http://example.com)
 
-## 第三方内容
+## Changes and New Works License
 
-本项目可能包含或引用采用其他许可的第三方内容。第三方内容继续适用其原有许可，本许可不会替代、限制或重新授权这些内容。具体声明见项目中的 `THIRD_PARTY_NOTICES.md` 以及相关目录内的许可文件。
+The licensor grants you an additional copyright license
+to make changes and new works based on the software for any
+permitted purpose.
 
-## 无担保
+## Patent License
 
-本项目源码按“现状”提供，不提供任何明示或默示担保。项目维护者不对因使用、修改、分发或无法使用本项目源码而产生的任何直接、间接、偶然、特殊或后果性损失承担责任。
+The licensor grants you a patent license for the software that
+covers patent claims the licensor can license, or becomes able
+to license, that you would infringe by using the software.
 
-## 许可性质说明
+## Noncommercial Purposes
 
-本许可允许公开查看、修改和非商业使用，但限制商业使用；因此它不是 OSI 批准的开放源码许可证。需要标准开放源码许可、商业授权或其他用途授权时，请先联系项目维护者。
+Any noncommercial purpose is a permitted purpose.
+
+## Personal Uses
+
+Personal use for research, experiment, and testing for
+the benefit of public knowledge, personal study, private
+entertainment, hobby projects, amateur pursuits, or religious
+observance, without any anticipated commercial application,
+is use for a permitted purpose.
+
+## Noncommercial Organizations
+
+Use by any charitable organization, educational institution,
+public research organization, public safety or health
+organization, environmental protection organization,
+or government institution is use for a permitted purpose
+regardless of the source of funding or obligations resulting
+from the funding.
+
+## Fair Use
+
+You may have "fair use" rights for the software under the
+law. These terms do not limit them.
+
+## No Other Rights
+
+These terms do not allow you to sublicense or transfer any of
+your licenses to anyone else, or prevent the licensor from
+granting licenses to anyone else.  These terms do not imply
+any other licenses.
+
+## Patent Defense
+
+If you make any written claim that the software infringes or
+contributes to infringement of any patent, your patent license
+for the software granted under these terms ends immediately. If
+your company makes such a claim, your patent license ends
+immediately for work on behalf of your company.
+
+## Violations
+
+The first time you are notified in writing that you have
+violated any of these terms, or done anything with the
+software not covered by your licenses, your licenses can
+nonetheless continue if you come into full compliance with
+these terms, and take practical steps to correct past
+violations, within 32 days of receiving notice. Otherwise, all
+your licenses end immediately.
+
+## No Liability
+
+***As far as the law allows, the software comes as is, without
+any warranty or condition, and the licensor will not be liable
+to you for any damages arising out of these terms or the use
+or nature of the software, under any kind of legal claim.***
+
+## Definitions
+
+The **licensor** is the individual or entity offering these
+terms, and the **software** is the software the licensor makes
+available under these terms.
+
+**You** refers to the individual or entity agreeing to these
+terms.
+
+**Your company** is any legal entity, sole proprietorship,
+or other kind of organization that you work for, plus all
+organizations that have control over, are under the control of,
+or are under common control with that organization.  **Control**
+means ownership of substantially all the assets of an entity,
+or the power to direct its management and policies by vote,
+contract, or otherwise.
+
+**Your licenses** are all the licenses granted to you for the
+software under these terms.
+
+**Use** means anything you do with the software requiring one of
+your licenses.

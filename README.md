@@ -557,11 +557,11 @@ godot --headless --path . --scene res://tests/ui_runtime_smoke.tscn
 
 ### 源码许可
 
-本项目作者创作的源码采用项目自定义的**源码非商业许可**：允许任何人查看、复制、修改、改编和非商业使用源码，但未经项目维护者书面许可，不得将源码或其衍生作品用于商业目的。
+本项目作者创作的源码采用 [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/)。该许可允许在非商业目的下查看、复制、修改、制作衍生作品和分发源码。
 
-商业化使用请联系项目维护者协商商业授权。当前仓库暂不公布具体联系方式。完整条款见 [LICENSE](LICENSE)。
+商业使用不属于该许可授予的范围。商业化使用请联系项目维护者协商商业授权；当前仓库暂不公布具体联系方式。完整许可文本见 [LICENSE](LICENSE)。
 
-这不是 OSI 批准的标准开放源码许可证。它允许公开修改和非商业使用，但明确限制商业使用；第三方组件和其他非源码内容不自动适用该许可。
+PolyForm Noncommercial 是 source-available 的非商业源码许可，不是 OSI 批准的标准开源许可证。该许可仅适用于本项目作者创作并纳入源码范围的文件；图像、音频、规则文本、字体、商标、Godot Engine、Godot MCP Native 以及其他第三方内容不自动适用本许可，具体以各自的许可和来源声明为准。
 
 ### 隐私与发布注意事项
 
